@@ -74,7 +74,7 @@ def send_request(uri, method="GET", body=None, depth=0):
     sock.close()
 
     print(f"[i] {status_line}")
-    print(f"[i] 响应头: {headers.get('Content-Type', '')}")
+    print(f"[i] 响应头: {headers}")
 
     # 处理 304 Not Modified，直接返回缓存内容
     status_code = int(status_line.split()[1])
@@ -117,7 +117,7 @@ def download_embedded_resources(html_body, base_uri):
 
 
 def main():
-    method = "GET"
+    method = "HEAD"
     url = "http://www.xjtu.edu.cn/"
     data = None
     body = None
