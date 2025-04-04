@@ -6,14 +6,13 @@ def is_gzipped(data):
     return data[:2] == b'\x1f\x8b'  # Gzip 文件的 magic bytes
 
 def test_gzip():
-    # 连接到 httpbin.org
     host = "httpbin.org"
     port = 80  # HTTP 默认端口
     request = (
-        "GET /50MB.zip HTTP/1.1\r\n"
-        "Host: ipv4.download.thinkbroadband.com\r\n"
+        "GET /gzip HTTP/1.1\r\n"
+        f"Host: {host}\r\n"
         "User-Agent: CustomClient/1.0\r\n"
-        "Accept-Encoding: gzip\r\n"
+        "Accept-Encoding: gzip\r\n"  # 明确请求 gzip 压缩
         "Connection: close\r\n\r\n"
     )
 

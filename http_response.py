@@ -11,7 +11,7 @@ def read_line(sock):
         if not chunk:
             break
         line += chunk
-    return line.strip().decode()
+    return line.strip().decode(errors='ignore')
 def recv_exact(sock, size):
     """确保读取完整的 size 字节"""
     data = b""
@@ -26,11 +26,13 @@ def handle_chunked_body(body, sock):
     decoded_body = b""
     while True:
         chunk_size_line = read_line(sock)
-        if not chunk_size_line:
-            break
-        chunk_size = int(chunk_size_line, 16)  # 16 进制解析 chunk 大小
+        try:
+            chunk_size = int(chunk_size_line, 16)  # 16 进制解析 chunk 大小
+        except ValueError:
+            print(f"Skipping invalid chunk size: {repr(chunk_size_line)}")
+            continue  # 跳过无效的 chunk size
         if chunk_size == 0:
-            break  # 结束 chunked 解析
+            break  # 结束处理
         chunk_data = recv_exact(sock, chunk_size)
         sock.recv(2)  # 读取 \r\n
         decoded_body += chunk_data
@@ -74,9 +76,8 @@ def read_response(sock) -> tuple:
         body = handle_chunked_body(body, sock)
 
     # 处理 Gzip 压缩
-    if headers.get("Content-Encoding", "").lower() == "gzip":
-        body = decompress_gzip(body)
-
+    # if headers.get("Content-Encoding", "").lower() == "gzip":
+    #     body = decompress_gzip(body)
     return status_line, headers, body
 
 def is_redirect(status_code):
