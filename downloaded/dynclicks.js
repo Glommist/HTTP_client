@@ -91,46 +91,4 @@ function _onShowDynClicksBatch(xmlhttp, dynobjs)
 		            var imgobjs = document.getElementsByName(dynobjs[i]);
 		            for(var j = 0; j < imgobjs.length; j++)
 		            {
-		            		imgobjs[j].innerHTML = texts[i];
-		            }
-		        }
-		        catch(e)
-		        {
-		        }
-		  	}
-		}
-}
-
-function _onShowDynClicks(xmlhttp, dynobj)
-{
-    if(xmlhttp.readyState == 4 && xmlhttp.status == 200)
-    {
-        try
-        {
-            document.getElementById(dynobj).innerHTML = xmlhttp.responseText;
-            //针对2个内容重叠而且 id 相同时的处理方法
-            var imgobjs = document.getElementsByName(dynobj);
-            if(imgobjs.length>0)
-            { 
-                     imgobjs[1].innerHTML =  xmlhttp.responseText;
-            }            
-        }
-        catch(e)
-        {
-        }
-    }
-}
-
-function _addDynClicks(clicktype, owner, clickid)
-{
-    try
-    {
-    	var url = '/system/resource/code/news/click/addclicktimes.jsp?wburlid=' + clickid + '&owner=' + owner + '&type=' + clicktype;
-        var xmlhttp = _dynClicks_ajax();
-        xmlhttp.open("GET",url, true);
-        xmlhttp.send();
-    }
-    catch(e)
-    {
-    }
-}
+		          
