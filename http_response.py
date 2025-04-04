@@ -1,6 +1,50 @@
 # 解析响应，处理重定向、chunked等
 import socket
 
+import gzip
+
+def read_line(sock):
+    """从 socket 读取一行数据，直到 \r\n"""
+    line = b""
+    while not line.endswith(b"\r\n"):
+        chunk = sock.recv(1)  # 一次读取 1 字节，确保逐行解析
+        if not chunk:
+            break
+        line += chunk
+    return line.strip().decode()
+def recv_exact(sock, size):
+    """确保读取完整的 size 字节"""
+    data = b""
+    while len(data) < size:
+        chunk = sock.recv(size - len(data))
+        if not chunk:
+            break
+        data += chunk
+    return data
+
+def handle_chunked_body(body, sock):
+    decoded_body = b""
+    while True:
+        chunk_size_line = read_line(sock)
+        if not chunk_size_line:
+            break
+        chunk_size = int(chunk_size_line, 16)  # 16 进制解析 chunk 大小
+        if chunk_size == 0:
+            break  # 结束 chunked 解析
+        chunk_data = recv_exact(sock, chunk_size)
+        sock.recv(2)  # 读取 \r\n
+        decoded_body += chunk_data
+        print(f"[Chunk] {chunk_size} bytes: {chunk_data.decode(errors='ignore')}")  # 打印 chunk 内容
+    return decoded_body
+
+
+def decompress_gzip(body):
+    """解压 Gzip 响应体"""
+    try:
+        return gzip.decompress(body)
+    except Exception as e:
+        print(f"[x] Gzip 解压失败: {e}")
+        return body  # 返回原始数据
 
 def read_response(sock) -> tuple:
     """
@@ -34,45 +78,6 @@ def read_response(sock) -> tuple:
         body = decompress_gzip(body)
 
     return status_line, headers, body
-
-
-def handle_chunked_body(body_bytes, sock):
-    """
-    解析 Chunked 传输的响应体
-    """
-    body = b""
-    while True:
-        # 读取 chunk size
-        chunk_size_str = b""
-        while not chunk_size_str.endswith(b"\r\n"):
-            chunk_size_str += sock.recv(1)
-
-        chunk_size = int(chunk_size_str.strip(), 16)
-        if chunk_size == 0:
-            break  # 结束 Chunked 传输
-
-        # 读取 chunk 数据
-        chunk_data = b""
-        while len(chunk_data) < chunk_size:
-            chunk_data += sock.recv(chunk_size - len(chunk_data))
-
-        # 读取 chunk 结尾的 `\r\n`
-        sock.recv(2)
-
-        body += chunk_data
-
-    return body
-
-
-import gzip
-import io
-
-def decompress_gzip(body_bytes):
-    """
-    解压 Gzip 编码的 HTTP 响应体
-    """
-    with gzip.GzipFile(fileobj=io.BytesIO(body_bytes)) as f:
-        return f.read()
 
 def is_redirect(status_code):
     """
