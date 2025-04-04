@@ -109,6 +109,7 @@ def inject_default_headers(headers, host, keep_alive=True, user_agent=None):
 
     return headers
 
+
 import mimetypes
 import os
 def build_multipart_form_data(file_path):

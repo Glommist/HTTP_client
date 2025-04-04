@@ -138,11 +138,6 @@ def main():
     method = "POST"
     url = "http://47.109.192.71:8080/"  # 选择一个支持 POST 的服务器
     file_path = "post_file.txt"
-    # if method == "POST" and file_path == None:
-    #     import json
-    #     data = json.dumps({"name": "Alice", "message": "Hello"})
-    # else:
-    #     data = None
     
     try:
         body = send_request(url, method=method, file_path=file_path)
