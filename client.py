@@ -1,6 +1,7 @@
 import socket
 import sys
 import ssl
+
 from uri_utils import parse_uri, get_host_port
 from http_request import (
     build_get_request,
@@ -54,7 +55,9 @@ def send_request(uri, method="GET", body=None, depth=0):
     if is_cached(uri):
         cached_headers = get_cached_headers(uri)
         headers.update({k: v for k, v in cached_headers.items() if v})
-    
+
+    CookieJar.inject_into_headers(COOKIE_JAR, headers, uri)
+    print("COOKIE_JAR:",COOKIE_JAR.getcookies())
     # 构造请求
     if method == "GET":
         request = build_get_request(uri_parsed, headers)
@@ -72,6 +75,10 @@ def send_request(uri, method="GET", body=None, depth=0):
 
     status_line, headers, body = read_response(sock)
     sock.close()
+
+    # 提取cookie
+
+    COOKIE_JAR.extract_from_headers(headers)
 
     print(f"[i] {status_line}")
     print(f"[i] 响应头: {headers}")

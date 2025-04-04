@@ -7,7 +7,8 @@ class CookieJar:
     def __init__(self):
         """初始化 Cookie 存储"""
         self.cookies = {}
-
+    def getcookies(self):
+        return self.cookies
     def extract_from_headers(self, headers):
         """
         从 HTTP 响应头中提取 `Set-Cookie` 并存储
