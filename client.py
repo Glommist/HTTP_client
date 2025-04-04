@@ -108,7 +108,7 @@ def main():
     # data = sys.argv[3] if method == "POST" and len(sys.argv) > 3 else None
 
     method = "GET"
-    url = "http://www.python.org/"
+    url = "http://www.xjtu.edu.cn/"
     data = None
 
     try:
