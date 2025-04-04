@@ -25,11 +25,20 @@ COOKIE_JAR = CookieJar()
 import ssl
 
 def make_connection(host, port, use_https=False):
-    sock = socket.create_connection((host, port))
+    """建立 HTTP/HTTPS 连接"""
     if use_https:
+        port = port or 443  # 确保 HTTPS 使用端口 443
         context = ssl.create_default_context()
-        sock = context.wrap_socket(sock, server_hostname=host)
-    return sock
+        try:
+            raw_sock = socket.create_connection((host, port), timeout=5)
+            sock = context.wrap_socket(raw_sock, server_hostname=host)  # SNI 支持
+            return sock
+        except ssl.SSLError as e:
+            print(f"[SSL错误] {e}")
+            raise
+    else:
+        port = port or 80
+        return socket.create_connection((host, port), timeout=5)
 
 
 def send_request(uri, method="GET", body=None, depth=0):
@@ -108,7 +117,7 @@ def main():
     # data = sys.argv[3] if method == "POST" and len(sys.argv) > 3 else None
 
     method = "GET"
-    url = "http://www.xjtu.edu.cn/"
+    url = "http://www.python.org/"
     data = None
 
     try:
