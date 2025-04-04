@@ -17,7 +17,7 @@ from cookie_jar import CookieJar
 from utils import save_to_file, extract_embedded_resources, resolve_relative_url
 from cache import is_cached, get_cached_headers, store_response, load_cached_body
 
-USER_AGENT = "YourName"
+USER_AGENT = "XiongYuan and LiXinRui"
 COOKIE_JAR = CookieJar()
 
 
