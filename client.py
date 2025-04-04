@@ -2,7 +2,6 @@
 
 import socket
 import sys
-from urllib.parse import urlparse
 
 from uri_utils import parse_uri, get_host_port
 from http_request import (
