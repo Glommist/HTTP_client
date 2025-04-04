@@ -43,25 +43,16 @@ def build_head_request(uri, headers=None):
 
 
 # 构造 POST 请求
-def build_post_request(uri, data, headers=None, file_path=None, content_type="application/json"):
+def build_post_request(uri, data, headers=None, file_path=None):
     path = uri.path or "/"
     if uri.query:
         path += f"?{uri.query}"
 
     request_line = f"POST {path} HTTP/1.1"
 
-    if content_type == "application/json":
-        body = json.dumps(data)
-    elif content_type == "application/x-www-form-urlencoded":
-        body = urlencode(data)
-    else:
-        raise ValueError("Unsupported Content-Type")
-
     default_headers = {
         "Host": uri.host,
         "User-Agent": "MyCustomBrowser/1.0",
-        "Content-Type": content_type,
-        "Content-Length": str(len(body)),
         "Connection": "Keep-Alive"
     }
 
