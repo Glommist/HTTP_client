@@ -120,11 +120,14 @@ def main():
     method = "GET"
     url = "http://www.xjtu.edu.cn/"
     data = None
+    body = None
 
     try:
-        send_request(url, method=method, body=data)
+        body = send_request(url, method=method, body=data)
     except Exception as e:
         print(f"[x] 请求失败: {e}")
+
+    # print(body)
 
 
 if __name__ == "__main__":
