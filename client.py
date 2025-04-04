@@ -18,6 +18,7 @@ from http_response import (
 from cookie_jar import CookieJar
 from utils import save_to_file, extract_embedded_resources, resolve_relative_url
 
+import ssl
 
 USER_AGENT = "YourName"  
 COOKIE_JAR = CookieJar()
@@ -28,6 +29,13 @@ def make_connection(host, port, use_https=False):
     sock = socket.create_connection((host, port))
     if use_https:
         context = ssl.create_default_context()
+
+        context = ssl.SSLContext(ssl.PROTOCOL_TLS_CLIENT)  # 选择 TLS 客户端模式
+        context.check_hostname = True  # 确保主机名匹配证书
+        context.verify_mode = ssl.CERT_REQUIRED  # 启用证书验证
+        context.load_default_certs()  # 加载默认证书
+
+        #建立SSL连接失败
         sock = context.wrap_socket(sock, server_hostname=host)
     return sock
 
@@ -90,6 +98,7 @@ def download_embedded_resources(html_body, base_uri):
     resources = extract_embedded_resources(html_body.decode(errors="ignore"), base_uri)
     print(f"[i] 共发现嵌入资源 {len(resources)} 个")
 
+    #内嵌的资源需要递归的访问
     for res_uri in resources:
         try:
             print(f"[↓] 下载资源: {res_uri}")
@@ -108,7 +117,7 @@ def main():
     # data = sys.argv[3] if method == "POST" and len(sys.argv) > 3 else None
 
     method = "GET"
-    url = "http://www.xjtu.edu.cn/"
+    url = "http://www.python.org/"
     data = None
 
     try:
