@@ -1,24 +1,9 @@
 import socket
 import ssl
 import json
-from urllib.parse import urlparse
 
 
-def create_connection(uri):
-    """根据 URL 创建 HTTP 或 HTTPS 连接"""
-    scheme = uri.scheme
-    host = uri.host
-    port = uri.port or (443 if scheme == "https" else 80)
-
-    sock = socket.create_connection((host, port))
-
-    if scheme == "https":
-        context = ssl.create_default_context()
-        sock = context.wrap_socket(sock, server_hostname=host)
-
-    return sock
-
-
+# 构造 GET 请求
 def build_get_request(uri, headers=None):
     path = uri.path or "/"
     host = uri.host
@@ -37,7 +22,7 @@ def build_get_request(uri, headers=None):
     headers_str = "\r\n".join(f"{key}: {value}" for key, value in default_headers.items())
     return f"{request_line}\r\n{headers_str}\r\n\r\n"
 
-
+# 构造 HEAD 请求
 def build_head_request(uri, headers=None):
     path = uri.path or "/"
     host = uri.host
@@ -56,7 +41,7 @@ def build_head_request(uri, headers=None):
     headers_str = "\r\n".join(f"{key}: {value}" for key, value in default_headers.items())
     return f"{request_line}\r\n{headers_str}\r\n\r\n"
 
-
+# 构造 POST 请求
 def build_post_request(uri, data, headers=None):
     path = uri.path or "/"
     host = uri.host
@@ -78,7 +63,7 @@ def build_post_request(uri, data, headers=None):
     headers_str = "\r\n".join(f"{key}: {value}" for key, value in default_headers.items())
     return f"{request_line}\r\n{headers_str}\r\n\r\n{body}"
 
-
+# 注入默认请求头
 def inject_default_headers(headers, host, keep_alive=True, user_agent=None):
     if headers is None:
         headers = {}
@@ -88,25 +73,3 @@ def inject_default_headers(headers, host, keep_alive=True, user_agent=None):
     headers.setdefault("Connection", "Keep-Alive" if keep_alive else "Close")
 
     return headers
-
-
-def send_request(uri, method="GET", headers=None, data=None):
-    """通用的 HTTP 请求发送函数，支持 GET/HEAD/POST"""
-    parsed_uri = urlparse(uri)
-    sock = create_connection(parsed_uri)
-
-    if method == "GET":
-        request = build_get_request(parsed_uri, headers)
-    elif method == "HEAD":
-        request = build_head_request(parsed_uri, headers)
-    elif method == "POST":
-        request = build_post_request(parsed_uri, data, headers)
-    else:
-        raise ValueError("Unsupported HTTP method")
-
-    sock.sendall(request.encode())
-
-    response = sock.recv(4096).decode()
-    sock.close()
-    return response
-

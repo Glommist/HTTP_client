@@ -76,7 +76,7 @@ def send_request(uri, method="GET", body=None, depth=0):
         return send_request(redirect_uri, method, body, depth + 1)
 
     # 保存主页面
-    save_to_file(uri, body, headers.get("Content-Type"))
+    save_to_file(uri_parsed, body, headers.get("Content-Type"))
 
     # 如果是 HTML 页面则提取资源并下载
     content_type = headers.get("Content-Type", "")
