@@ -7,7 +7,8 @@ from http_request import (
     build_get_request,
     build_head_request,
     build_post_request,
-    inject_default_headers
+    inject_default_headers,
+    build_multipart_form_data
 )
 from http_response import (
     read_response,
@@ -39,7 +40,7 @@ def make_connection(host, port, use_https=False):
         return socket.create_connection((host, port), timeout=5)
 
 
-def send_request(uri, method="GET", body=None, depth=0):
+def send_request(uri, method="GET", body=None, file_path=None, depth=0):
     """发送 HTTP/HTTPS 请求，支持缓存与重定向"""
     if depth > 5:
         print("[!] 重定向次数过多")
@@ -58,20 +59,30 @@ def send_request(uri, method="GET", body=None, depth=0):
 
     CookieJar.inject_into_headers(COOKIE_JAR, headers, uri)
     print("COOKIE_JAR:",COOKIE_JAR.getcookies())
+    # 处理文件上传
+    if method == "POST" and file_path:
+        body, extra_headers = build_multipart_form_data(file_path)
+        headers.update(extra_headers)
+
     # 构造请求
     if method == "GET":
         request = build_get_request(uri_parsed, headers)
     elif method == "HEAD":
         request = build_head_request(uri_parsed, headers)
     elif method == "POST":
-        request = build_post_request(uri_parsed, body or "", headers)
+        request = build_post_request(uri_parsed, body or "", headers, file_path)
     else:
         raise ValueError("Unsupported HTTP method")
 
     use_https = uri_parsed.scheme == "https"
     sock = make_connection(host, port, use_https=use_https)
-    print("request:\n" + request)
-    sock.sendall(request.encode("utf-8"))
+    # 发送请求
+    if isinstance(request, str):
+        print("request:\n" + request)
+        sock.sendall(request.encode("utf-8"))  # 仅字符串需要 encode
+    else:
+        print("request为bytes")
+        sock.sendall(request)  # 如果已经是 bytes，直接发送
 
     status_line, headers, body = read_response(sock)
     sock.close()
@@ -125,15 +136,16 @@ def download_embedded_resources(html_body, base_uri):
 
 def main():
     method = "POST"
-    url = "https://httpbin.org/post"  # 选择一个支持 POST 的服务器
-    if method == "POST":
-        import json
-        data = json.dumps({"name": "Alice", "message": "Hello"})
-    else:
-        data = None
+    url = "http://47.109.192.71:8080/"  # 选择一个支持 POST 的服务器
+    file_path = "post_file.txt"
+    # if method == "POST" and file_path == None:
+    #     import json
+    #     data = json.dumps({"name": "Alice", "message": "Hello"})
+    # else:
+    #     data = None
     
     try:
-        body = send_request(url, method=method, body=data)
+        body = send_request(url, method=method, file_path=file_path)
         print("[响应体]:")
         print(body if body else "无返回内容")
     except Exception as e:

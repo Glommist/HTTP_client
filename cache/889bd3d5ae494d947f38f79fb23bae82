@@ -1,6 +1,0 @@
-{
-    "Last-Modified": null,
-    "ETag": null,
-    "Date": "Fri, 04 Apr 2025 08:02:49 GMT",
-    "Body": "{\n  \"args\": {}, \n  \"data\": \"\\\"{\\\\\\\"name\\\\\\\": \\\\\\\"Alice\\\\\\\", \\\\\\\"message\\\\\\\": \\\\\\\"Hello\\\\\\\"}\\\"\", \n  \"files\": {}, \n  \"form\": {}, \n  \"headers\": {\n    \"Content-Length\": \"47\", \n    \"Content-Type\": \"application/json\", \n    \"Host\": \"httpbin.org\", \n    \"User-Agent\": \"YourName\", \n    \"X-Amzn-Trace-Id\": \"Root=1-67ef9229-67ac807441c0f1f76c0a1050\"\n  }, \n  \"json\": \"{\\\"name\\\": \\\"Alice\\\", \\\"message\\\": \\\"Hello\\\"}\", \n  \"origin\": \"185.244.208.140\", \n  \"url\": \"https://httpbin.org/post\"\n}\n"
-}
