@@ -2,10 +2,9 @@
 from urllib.parse import urlparse
 
 def build_get_request(uri, headers=None):
-    parsed_url = urlparse(uri)
-    path = parsed_url.path or "/"  # 默认路径为 "/"
-    host = parsed_url.hostname
-    port = parsed_url.port or 80   # 默认 HTTP 端口 80
+    path = uri.path or "/"  # 默认路径为 "/"
+    host = uri.host
+    port = uri.port or 80   # 默认 HTTP 端口 80
 
     request_line = f"GET {path} HTTP/1.1"
     default_headers = {
@@ -23,10 +22,9 @@ def build_get_request(uri, headers=None):
 
 
 def build_head_request(uri, headers=None):
-    parsed_url = urlparse(uri)
-    path = parsed_url.path or "/"
-    host = parsed_url.hostname
-    port = parsed_url.port or 80
+    path = uri.path or "/"
+    host = uri.host
+    port = uri.port or 80
 
     request_line = f"HEAD {path} HTTP/1.1"
     default_headers = {
@@ -45,10 +43,9 @@ def build_head_request(uri, headers=None):
 import json
 
 def build_post_request(uri, data, headers=None):
-    parsed_url = urlparse(uri)
-    path = parsed_url.path or "/"
-    host = parsed_url.hostname
-    port = parsed_url.port or 80
+    path = uri.path or "/"
+    host = uri.host
+    port = uri.port or 80
 
     request_line = f"POST {path} HTTP/1.1"
     body = json.dumps(data)  # 发送 JSON 数据

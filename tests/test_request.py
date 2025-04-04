@@ -18,7 +18,8 @@ def send_http_request(request, host, port=80):
     return response.decode(errors="ignore")  # 忽略解码错误
 
 # 发送 GET 请求
-url = "https://www.xjtu.edu.cn/"
-request = build_get_request(url)
-response = send_http_request(request, "www.xjtu.edn.cn")
+url = "https://www.baidu.com/"
+from uri_utils import parse_uri
+request = build_get_request(parse_uri(url))
+response = send_http_request(request, "www.baidu.com")
 print(response)
