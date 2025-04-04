@@ -22,10 +22,13 @@ from utils import save_to_file, extract_embedded_resources, resolve_relative_url
 USER_AGENT = "YourName"  
 COOKIE_JAR = CookieJar()
 
+import ssl
 
-def make_connection(host, port):
-    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    sock.connect((host, port))
+def make_connection(host, port, use_https=False):
+    sock = socket.create_connection((host, port))
+    if use_https:
+        context = ssl.create_default_context()
+        sock = context.wrap_socket(sock, server_hostname=host)
     return sock
 
 
@@ -39,7 +42,7 @@ def send_request(uri, method="GET", body=None, depth=0):
 
     headers = {}
     inject_default_headers(headers, host, keep_alive=False, user_agent=USER_AGENT)
-    COOKIE_JAR.inject_into_headers(headers)
+    # COOKIE_JAR.inject_into_headers(headers)
 
     # 构造请求
     if method == "GET":
@@ -51,8 +54,10 @@ def send_request(uri, method="GET", body=None, depth=0):
     else:
         raise ValueError("Unsupported HTTP method")
 
-    sock = make_connection(host, port)
-    sock.sendall(request)
+    use_https = uri_parsed.scheme == "https"
+    sock = make_connection(host, port, use_https=use_https)
+    print("request:\n" + request)
+    sock.sendall(request.encode("utf-8"))
 
     status_line, headers, body = read_response(sock)
     sock.close()
@@ -60,7 +65,7 @@ def send_request(uri, method="GET", body=None, depth=0):
     print(f"[i] {status_line}")
     print(f"[i] 响应头: {headers.get('Content-Type', '')}")
 
-    COOKIE_JAR.extract_from_headers(headers)
+    # COOKIE_JAR.extract_from_headers(headers)
 
     # 重定向处理
     status_code = int(status_line.split()[1])
@@ -94,13 +99,17 @@ def download_embedded_resources(html_body, base_uri):
 
 
 def main():
-    if len(sys.argv) < 3:
-        print("Usage: python client.py <METHOD> <URL> [POST_DATA]")
-        return
+    # if len(sys.argv) < 3:
+    #     print("Usage: python client.py <METHOD> <URL> [POST_DATA]")
+    #     return
 
-    method = sys.argv[1].upper()
-    url = sys.argv[2]
-    data = sys.argv[3] if method == "POST" and len(sys.argv) > 3 else None
+    # method = sys.argv[1].upper()
+    # url = sys.argv[2]
+    # data = sys.argv[3] if method == "POST" and len(sys.argv) > 3 else None
+
+    method = "GET"
+    url = "http://www.python.org/"
+    data = None
 
     try:
         send_request(url, method=method, body=data)
