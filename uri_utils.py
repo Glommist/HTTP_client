@@ -41,7 +41,10 @@ def parse_uri(uri_str):
         port = int(port_str)
     else:
         host = host_port
-        port = 443 if scheme == "https" else 80  # 默认端口
+        if scheme == 'http':
+            port = 80
+        if scheme == 'https':
+            port = 443
 
     # 4. 提取 path 和 query
     if "?" in path_query:

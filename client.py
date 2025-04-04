@@ -18,6 +18,7 @@ from http_response import (
 from cookie_jar import CookieJar
 from utils import save_to_file, extract_embedded_resources, resolve_relative_url
 
+import ssl
 
 USER_AGENT = "YourName"  
 COOKIE_JAR = CookieJar()
@@ -99,6 +100,7 @@ def download_embedded_resources(html_body, base_uri):
     resources = extract_embedded_resources(html_body.decode(errors="ignore"), base_uri)
     print(f"[i] 共发现嵌入资源 {len(resources)} 个")
 
+    #内嵌的资源需要递归的访问
     for res_uri in resources:
         try:
             print(f"[↓] 下载资源: {res_uri}")
@@ -117,7 +119,7 @@ def main():
     # data = sys.argv[3] if method == "POST" and len(sys.argv) > 3 else None
 
     method = "GET"
-    url = "http://www.python.org/"
+    url = "http://www.xjtu.edu.cn/"
     data = None
 
     try:
