@@ -117,17 +117,20 @@ def download_embedded_resources(html_body, base_uri):
 
 
 def main():
-    method = "HEAD"
-    url = "http://www.xjtu.edu.cn/"
-    data = None
-    body = None
-
+    method = "POST"
+    url = "https://httpbin.org/post"  # 选择一个支持 POST 的服务器
+    if method == "POST":
+        import json
+        data = json.dumps({"name": "Alice", "message": "Hello"})
+    else:
+        data = None
+    
     try:
         body = send_request(url, method=method, body=data)
+        print("[响应体]:")
+        print(body if body else "无返回内容")
     except Exception as e:
         print(f"[x] 请求失败: {e}")
-
-    # print(body)
 
 
 if __name__ == "__main__":
