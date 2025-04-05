@@ -136,7 +136,7 @@ def download_embedded_resources(html_body, base_uri):
 
 def main():
     method = "POST"
-    url = "http://47.109.192.71:8080/"  # 选择一个支持 POST 的服务器
+    url = "http://www.xjtu.edu.cn"  # 选择一个支持 POST 的服务器
     file_path = "post_file.txt"
     
     try:
