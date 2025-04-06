@@ -2,6 +2,8 @@ import socket
 import sys
 import ssl
 
+from sklearn.metrics import mean_squared_error
+
 from uri_utils import parse_uri, get_host_port
 from http_request import (
     build_get_request,
@@ -87,25 +89,31 @@ def send_request(uri, method="GET", body=None, file_path=None, depth=0):
     status_line, headers, body = read_response(sock)
     sock.close()
 
+    if method == "HEAD":
+        body = None
+
     # 提取cookie
 
     COOKIE_JAR.extract_from_headers(headers)
 
-    print(f"[i] {status_line}")
-    print(f"[i] 响应头: {headers}")
+    # print(f"[i] {status_line}")
+    # print(f"[i] 响应头: {headers}")
 
     # 处理 304 Not Modified，直接返回缓存内容
     status_code = int(status_line.split()[1])
     if status_code == 304:
         print("[CACHE] 服务器返回 304 Not Modified，使用缓存")
-        return load_cached_body(uri)
+        if method == "HEAD":
+            return status_line,get_cached_headers(uri),None
+        return status_line,get_cached_headers(uri),load_cached_body(uri)
+
 
     # 处理重定向
     if is_redirect(status_code):
         location = get_redirect_location(headers)
         redirect_uri = resolve_relative_url(uri, location)
         print(f"[→] 重定向到 {redirect_uri}")
-        return send_request(redirect_uri, method, body, depth + 1)
+        return status_line,headers,send_request(redirect_uri, method, body, depth + 1)
 
     # 存储缓存
     store_response(uri, headers, body)
@@ -118,7 +126,7 @@ def send_request(uri, method="GET", body=None, file_path=None, depth=0):
     if "text/html" in content_type and method == "GET":
         download_embedded_resources(body, uri)
 
-    return body
+    return status_line,headers,body
 
 
 def download_embedded_resources(html_body, base_uri):
@@ -135,12 +143,14 @@ def download_embedded_resources(html_body, base_uri):
 
 
 def main():
-    method = "POST"
+    method = "HEAD"
     url = "http://www.xjtu.edu.cn"  # 选择一个支持 POST 的服务器
     file_path = "post_file.txt"
-    
+
     try:
-        body = send_request(url, method=method, file_path=file_path)
+        status_line,headers,body = send_request(url, method=method, file_path=file_path)
+        print(f"[i] {status_line}")
+        print(f"[i] 响应头: {headers}")
         print("[响应体]:")
         print(body if body else "无返回内容")
     except Exception as e:
