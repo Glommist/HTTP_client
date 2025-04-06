@@ -13,6 +13,9 @@ class HttpClientUI(QWidget):
     def __init__(self):
         super().__init__()
         self.setWindowTitle("HTTP 客户端")
+        self.setWindowIcon(
+            QIcon("ui/picture/icon.png"))  # Set the app icon here
+
         self.setMinimumSize(900, 600)
 
         yahei_font = QFont("Microsoft YaHei", 10)
