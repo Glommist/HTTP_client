@@ -121,6 +121,13 @@ class HttpClientUI(QWidget):
         top_layout.addWidget(self.url_input, stretch=1)
         top_layout.addWidget(self.file_button)
         top_layout.addWidget(self.send_button)
+        # 资源类型选择框
+        self.resource_type_combo = QComboBox()
+        self.resource_type_combo.setFont(yahei_font)
+        self.resource_type_combo.addItems(["全部", "img", "script", "link", "pdf"])
+        self.resource_type_combo.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
+        top_layout.addWidget(QLabel("资源类型:"))
+        top_layout.addWidget(self.resource_type_combo)
         self.layout.addLayout(top_layout)
 
         # 响应状态行
@@ -171,9 +178,13 @@ class HttpClientUI(QWidget):
         url = self.url_input.text()
         method = self.method_combo.currentText()
         file_path = getattr(self, 'file_path', None)
+        
+        # https://www.un.org/en/climatechange/reports  测试pdf资源提取功能网址
+        type_text = self.resource_type_combo.currentText()
+        resource_type = None if type_text == "全部" else [type_text]
 
         try:
-            status_line, headers, body = send_request(url, method=method, file_path=file_path)
+            status_line, headers, body = send_request(url, method=method, file_path=file_path, resource_types=resource_type)
             self.response_status.setPlainText(str(status_line) if status_line else "无返回内容")
             self.response_headers.setPlainText(str(headers) if headers else "无返回内容")
             self.response_body.setPlainText(str(body) if body else "无返回内容")

@@ -42,7 +42,7 @@ def make_connection(host, port, use_https=False):
         return socket.create_connection((host, port), timeout=5)
 
 
-def send_request(uri, method="GET", body=None, file_path=None, depth=0):
+def send_request(uri, method="GET", body=None, file_path=None, depth=0, resource_types=None):
     """发送 HTTP/HTTPS 请求，支持缓存与重定向"""
     if depth > 5:
         print("[!] 重定向次数过多")
@@ -113,7 +113,7 @@ def send_request(uri, method="GET", body=None, file_path=None, depth=0):
         location = get_redirect_location(headers)
         redirect_uri = resolve_relative_url(uri, location)
         print(f"[→] 重定向到 {redirect_uri}")
-        return status_line,headers,send_request(redirect_uri, method, body, depth + 1)
+        return status_line,headers,send_request(redirect_uri, method, body, depth + 1, resource_types=resource_types)
 
     # 存储缓存
     store_response(uri, headers, body)
@@ -124,13 +124,13 @@ def send_request(uri, method="GET", body=None, file_path=None, depth=0):
     # 如果是 HTML 页面则提取资源并下载
     content_type = headers.get("Content-Type", "")
     if "text/html" in content_type and method == "GET":
-        download_embedded_resources(body, uri)
+        download_embedded_resources(body, uri, resource_types=resource_types)
 
     return status_line,headers,body
 
 
-def download_embedded_resources(html_body, base_uri):
-    resources = extract_embedded_resources(html_body.decode(errors="ignore"), base_uri)
+def download_embedded_resources(html_body, base_uri, resource_types=None):
+    resources = extract_embedded_resources(html_body.decode(errors="ignore"), base_uri, resource_types=resource_types)
     print(f"[i] 共发现嵌入资源 {len(resources)} 个")
 
     # 递归下载内嵌资源
@@ -146,9 +146,10 @@ def main():
     method = "HEAD"
     url = "http://www.xjtu.edu.cn"  # 选择一个支持 POST 的服务器
     file_path = "post_file.txt"
+    resource_type = ["script"]
 
     try:
-        status_line,headers,body = send_request(url, method=method, file_path=file_path)
+        status_line,headers,body = send_request(url, method=method, file_path=file_path, resource_types=resource_type)
         print(f"[i] {status_line}")
         print(f"[i] 响应头: {headers}")
         print("[响应体]:")

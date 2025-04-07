@@ -35,23 +35,36 @@ def save_to_file(uri, body_bytes, content_type=None):
 
     print(f"[✓] Saved: {filepath}")
 
+from urllib.parse import urljoin
 
-def extract_embedded_resources(html_body, base_url):
+def extract_embedded_resources(html_body, base_url, resource_types=None):
     """
-    解析 HTML，提取所有嵌入资源的 URL（img/src、link/href、script/src）
+    从 HTML 中提取指定类型的嵌入资源 URL
+    支持的类型包括：'img', 'link', 'script', 'pdf'
+
+    参数：
+    - html_body: HTML 内容字符串
+    - base_url: 用于转换相对路径为绝对路径
+    - resource_types: 要提取的资源类型列表，默认全部提取
     """
     resource_urls = set()
 
-    # 正则匹配 src/href 属性
-    resource_patterns = [
-        r'<img[^>]+src=["\']([^"\']+)["\']',
-        r'<link[^>]+href=["\']([^"\']+)["\']',
-        r'<script[^>]+src=["\']([^"\']+)["\']'
-    ]
+    all_patterns = {
+        'img': r'<img[^>]+src=["\']([^"\']+)["\']',
+        'link': r'<link[^>]+href=["\']([^"\']+)["\']',
+        'script': r'<script[^>]+src=["\']([^"\']+)["\']',
+        'pdf': r'<a[^>]+href=["\']([^"\']+\.pdf(?:\?[^"\']*)?)["\']'
+    }
 
-    for pattern in resource_patterns:
-        for match in re.findall(pattern, html_body, re.IGNORECASE):
-            resource_urls.add(resolve_relative_url(base_url, match))
+    # 如果未指定类型，则默认提取所有支持的资源
+    selected_patterns = all_patterns if resource_types is None else {
+        k: v for k, v in all_patterns.items() if k in resource_types
+    }
+
+    for key, pattern in selected_patterns.items():
+        matches = re.findall(pattern, html_body, re.IGNORECASE)
+        for match in matches:
+            resource_urls.add(urljoin(base_url, match))
 
     return list(resource_urls)
 
