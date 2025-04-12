@@ -74,18 +74,78 @@
 
 #### （**二**） **UI**设计  
 ![ui](report/picture/ui.png)
-ui设计如上：我们支持了请求方法（**GET** **HEAD** **POST**）的选择，支持输入URL以进行访问，在请求方法为**POST**时间，支持在本地文件中选择需要上传的文件，同时支持选择文件类型来协助文件上传。在返回部分，我们设计了**状态行**，**响应头**，**响应体**三个返回框，可以在用户发送请求后，返回**HTTP**报文的返回状态，响应头，和原始的响应体内容。
+**ui** 设计如上：我们支持了请求方法（**GET** **HEAD** **POST**）的选择，支持输入URL以进行访问，在请求方法为**POST**时间，支持在本地文件中选择需要上传的文件，同时支持选择文件类型来协助文件上传。在返回部分，我们设计了**状态行**，**响应头**，**响应体**三个返回框，可以在用户发送请求后，返回**HTTP**报文的返回状态，响应头，和原始的响应体内容。
 
 #### （**三**） 框架结构  
 *【说清楚客户端程序和服务器端程序的框架结构。特别是服务器程序：说明支持多个用户（连接）的方法，如多进程、多线程、多路复用等；如果存在进程或线程之间共享数据的，还要注意保护加锁等。说明错误处理的方法。】*
+我们的项目结构如下:
+```
+HTTP_CLIENT
+│  cache.py
+│  client.py
+│  cookie_jar.py
+│  http_request.py
+│  http_response.py
+│  uri_utils.py
+│  utils.py
+│
+├─report
+│  └─picture
+│        └─ui.png
+│
+├─tests
+│  │  test_cache.py
+│  │  test_chunked.py
+│  │  test_cookie.py
+│  │  test_gzip.py
+│  │  test_request.py
+│  │  test_response.py
+│  └─ test_uri.py
+│   
+│  
+│
+└─ui
+   │  http_ui.py
+   │
+   └─picture
+          Arrow-down.svg
+          icon.png
+```
+#### 模块功能说明
 
-#### （**四**） ……  
+| 模块文件名         | 功能描述                                                                 |
+|--------------------|--------------------------------------------------------------------------|
+| **`client.py`**        | 项目的核心模块，负责建立 **`HTTP/HTTPS`** 连接构造请求、发送请求、接收响应、处理缓存、重定向、Cookie、资源下载等。 |
+| **`http_request.py`** | 提供 **GET / HEAD / POST** 请求报文的构造函数，支持文件上传、表单编码等。         |
+|**`http_response.py`** | 解析响应报文，提取状态行、响应头和响应体，支持分块传输 **(** **chunked** **)** 、**gzip** 解压等，同时支持判断**HTTP**状态码是否为重定向，也支持获取重定向的**URL**|
+| **`cookie_jar.py`**    | 管理 **Cookie** 的存储与生命周期，实现从响应中提取和向请求头中注入 **Cookie**。         |
+| **`cache.py`**         | 实现简单的缓存机制，支持根据URL计算缓存文件的路径，可以判断URL是否存在缓存，支持获取缓存的 **`Last-Modified`** 和 **`ETag`**，用于 **`If-Modified-Since / If-None-Match`**，支持存储 **`HTTP`** 响应到缓存，同时也支持从缓存加载响应体 |
+| **`uri_utils.py`**     | 实现 **URI** 的解析、标准化，确保资源定位和处理正确。      |
+| **`utils.py`**        | 存放通用工具函数，例如文件保存、路径生成、类型判断、编码处理，解析相对 **`URL`**，转换成完整的绝对 **`URL`**。               |
+
+#### UI 模块说明
+
+| 模块/目录           | 功能描述                                                                |
+|----------------------|-------------------------------------------------------------------------|
+|**`ui/http_ui.py`**      | 图形化用户界面主程序，使用 **PyQt5** 实现功能选择、**URL** 输入、响应展示。 |
+| **`ui/picture/`**        | 存放图形界面所使用的图标与资源图片。                                     |
+
+#### 测试模块说明
+
+| 测试脚本             | 测试内容                                                         |
+|----------------------|------------------------------------------------------------------|
+| **`test_cache.py`**      | 测试缓存模块的读写、条件缓存请求 **（** **If-Modified-Since** **）**逻辑。        |
+| **`test_chunked.py`**   | 测试分块传输 **（** **Chunked Transfer Encoding** **）** 内容的解析正确性。       |
+| **`test_cookie.py`**     | 测试 **Cookie** 的注入与提取机制。          |
+| **`test_gzip.py`**       | 测试在显性设置以**gzip**形式传输报文的情况下是否能正常传输和解压缩                 |
+| **`test_request.py`**    | 测试**GET**是否能够正常执行，以此确定URL的解析是否正确 |
+| **`test_response.py`**   |测试**HTTP**响应能否正常解析，测试获取重定向地址。    |
+| **`test_uri.py`**        | 测试 **URI** 工具函数的解析、重定向地址拼接、编码/解码等功能。          |
 
 ### **3**. 关键代码的描述  
-*【主要代码源文件名及功能描述，是借鉴还是自主编写，自主编写需注明编写人。】*
 
 #### （**一**） 关键代码**1**:
-##### client.py
+##### send_request
 自主编写：大部分由熊原编写，李鑫瑞做了部分修改和添加
 ```python
 def send_request(uri, method="GET", body=None, file_path=None, depth=0, resource_types=None):
@@ -172,7 +232,7 @@ def send_request(uri, method="GET", body=None, file_path=None, depth=0, resource
     return status_line,headers,body
 
 ```
-该函数具有以下功能：
+该部分具有以下功能：
 - 支持 **GET/HEAD/POST** 三种 HTTP 方法
 
 - 处理文件上传 **（POST）**
@@ -183,8 +243,258 @@ def send_request(uri, method="GET", body=None, file_path=None, depth=0, resource
 
 - 支持最大重定向深度控制
 
-#### （**二**） 关键代码**2** ……  
+#### （**二**） 关键代码**2**
+##### parse_uri
+自主编写：由熊原编写
+```python
+def parse_uri(uri_str):
+    """
+    手动解析 URI 字符串，返回 URI 对象
+    支持 http://host:port/path?query
+    """
+    uri_str = uri_str.strip()
 
+    # 1. 提取 scheme
+    if "://" not in uri_str:
+        raise ValueError("URI 缺少 scheme")
+    scheme, rest = uri_str.split("://", 1)
+
+    # 2. 提取 host[:port]
+    path_start = rest.find("/")
+    if path_start == -1:
+        host_port = rest
+        path_query = ""
+    else:
+        host_port = rest[:path_start]
+        path_query = rest[path_start:]
+
+    # 3. 提取 host 和 port
+    if ":" in host_port:
+        host, port_str = host_port.split(":", 1)
+        port = int(port_str)
+    else:
+        host = host_port
+        if scheme == 'http':
+            port = 80
+        if scheme == 'https':
+            port = 443
+
+    # 4. 提取 path 和 query
+    if "?" in path_query:
+        path, query = path_query.split("?", 1)
+    else:
+        path = path_query
+        query = ""
+
+    return URI(scheme, host.lower(), port, normalize_path(path), query)
+```
+该部分具有以下功能：
+- 拆解 **scheme://host:port/path?query** 格式**URI**
+
+- 默认端口设置：**http=80，https=443**
+
+- 为后续构造请求做准备（尤其用于分离主机与路径）
+
+
+
+#### （**三**） 关键代码**3**
+##### GET HEAD POST
+自主编写：由李鑫瑞编写
+```python
+# 构造 GET 请求
+def build_get_request(uri, headers=None):
+    path = uri.path or "/"
+    if uri.query:
+        path += f"?{uri.query}"
+
+    request_line = f"GET {path} HTTP/1.1"
+    default_headers = {
+        "Host": uri.host,
+        "User-Agent": "XiongYuan and LiXinRui",
+        "Connection": "Keep-Alive"
+    }
+
+    if headers:
+        default_headers.update(headers)
+
+    headers_str = "\r\n".join(f"{key}: {value}" for key, value in default_headers.items())
+    return f"{request_line}\r\n{headers_str}\r\n\r\n"
+
+
+# 构造 HEAD 请求（同 GET，但无 Body）
+def build_head_request(uri, headers=None):
+    path = uri.path or "/"
+    if uri.query:
+        path += f"?{uri.query}"
+
+    request_line = f"HEAD {path} HTTP/1.1"
+    default_headers = {
+        "Host": uri.host,
+        "User-Agent": "XiongYuan and LiXinRui",
+        "Connection": "Keep-Alive"
+    }
+
+    if headers:
+        default_headers.update(headers)
+
+    headers_str = "\r\n".join(f"{key}: {value}" for key, value in default_headers.items())
+    return f"{request_line}\r\n{headers_str}\r\n\r\n"
+
+
+# 构造 POST 请求
+def build_post_request(uri, data, headers=None, file_path=None):
+    path = uri.path or "/"
+    if uri.query:
+        path += f"?{uri.query}"
+
+    request_line = f"POST {path} HTTP/1.1"
+
+    default_headers = {
+        "Host": uri.host,
+        "User-Agent": "XiongYuan and LiXinRui",
+        "Connection": "Keep-Alive"
+    }
+
+    # 处理 JSON 数据
+    if data and not file_path:
+        body = json.dumps(data)
+        default_headers["Content-Type"] = "application/json"
+        default_headers["Content-Length"] = str(len(body))
+
+    # 处理文件上传
+    elif file_path:
+        boundary = "----WebKitFormBoundary7MA4YWxkTrZu0gW"
+        file_name = os.path.basename(file_path)
+        mime_type = mimetypes.guess_type(file_name)[0] or "application/octet-stream"
+
+        with open(file_path, "rb") as f:
+            file_content = f.read()
+
+        body = (
+            f"--{boundary}\r\n"
+            f'Content-Disposition: form-data; name="file"; filename="{file_name}"\r\n'
+            f"Content-Type: {mime_type}\r\n\r\n"
+        ).encode() + file_content + f"\r\n--{boundary}--\r\n".encode()
+
+        default_headers["Content-Type"] = f"multipart/form-data; boundary={boundary}"
+        default_headers["Content-Length"] = str(len(body))
+
+    else:
+        raise ValueError("POST 请求需要提供 data 或 file_path")
+
+    # 合并用户自定义 Headers
+    if headers:
+        default_headers.update(headers)
+
+    headers_str = "\r\n".join(f"{key}: {value}" for key, value in default_headers.items())
+    
+    # 如果是 JSON，则返回字符串；如果是文件上传，则返回二进制数据
+    if file_path:
+        request = f"{request_line}\r\n{headers_str}\r\n\r\n".encode() + body
+    else:
+        request = f"{request_line}\r\n{headers_str}\r\n\r\n{body}"
+
+    return request
+
+```
+该部分具有以下功能：
+- 三个函数分别构建 **GET / HEAD / POST** 请求报文
+
+- 支持手动追加 **Headers**，如 **User-Agent Connection**
+
+- **POST** 支持上传 **JSON** 数据 和 文件（表单 **multipart** 上传）
+
+- 文件上传时自动判断 **MIME** 类型
+
+
+
+#### （**四**） 关键代码**4**
+##### chunked Gzip
+自主编写：李鑫瑞编写
+```python
+def handle_chunked_body(body, sock):
+    decoded_body = b""
+    while True:
+        chunk_size_line = read_line(sock)
+        try:
+            chunk_size = int(chunk_size_line, 16)  # 16 进制解析 chunk 大小
+        except ValueError:
+            print(f"Skipping invalid chunk size: {repr(chunk_size_line)}")
+            continue  # 跳过无效的 chunk size
+        if chunk_size == 0:
+            break  # 结束处理
+        chunk_data = recv_exact(sock, chunk_size)
+        sock.recv(2)  # 读取 \r\n
+        decoded_body += chunk_data
+        print(f"[Chunk] {chunk_size} bytes: {chunk_data.decode(errors='ignore')}")  # 打印 chunk 内容
+    return decoded_body
+
+
+def decompress_gzip(body):
+    """解压 Gzip 响应体"""
+    try:
+        return gzip.decompress(body)
+    except Exception as e:
+        print(f"[x] Gzip 解压失败: {e}")
+        return body  # 返回原始数据
+```
+该部分具有以下功能：
+- `handle_chunked_body` 用于逐块解析 **chunked** 编码响应体，自动跳过非法块
+
+- `decompress_gzip` 解压 **Gzip** 编码的内容，自动降级处理异常
+
+
+
+#### （**五**） 关键代码**5**
+##### cache
+自主编写：由熊原编写
+```python
+def get_cached_headers(uri):
+    """获取缓存的 `Last-Modified` 和 `ETag`，用于 If-Modified-Since / If-None-Match"""
+    cache_path = _get_cache_path(uri)
+    
+    if not os.path.exists(cache_path):
+        return {}
+
+    with open(cache_path, "r", encoding="utf-8") as f:
+        cache_data = json.load(f)
+
+    return {
+        "If-Modified-Since": cache_data.get("Last-Modified"),
+        "If-None-Match": cache_data.get("ETag"),
+    }
+
+
+
+def store_response(uri, headers, body):
+    """存储 HTTP 响应到缓存"""
+    cache_path = _get_cache_path(uri)
+    
+    cache_data = {
+        "Last-Modified": headers.get("Last-Modified"),
+        "ETag": headers.get("ETag"),
+        "Date": headers.get("Date"),
+        "Body": body.decode("utf-8", errors="ignore"),  # 转换为字符串
+    }
+
+    with open(cache_path, "w", encoding="utf-8") as f:
+        json.dump(cache_data, f, indent=4)
+
+
+def load_cached_body(uri):
+    """从缓存加载响应体"""
+    cache_path = _get_cache_path(uri)
+    with open(cache_path, "r", encoding="utf-8") as f:
+        cache_data = json.load(f)
+
+    return cache_data["Body"].encode("utf-8")
+```
+该部分具有以下功能：
+- 使用本地缓存目录保存请求响应的 **ETag / Last-Modified / Body**
+
+- 可通过请求头 **If-Modified-Since** 和 **If-None-Match** 实现 **HTTP** 缓存机制
+
+- 节省流量、提升响应速度
 ---
 
 ## 六、测试及结果分析  

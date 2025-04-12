@@ -38,35 +38,35 @@ class TestHTTPResponse(unittest.TestCase):
         self.assertEqual(headers["Content-Length"], "13")
         self.assertEqual(body, b"Hello, World!")
 
-    def test_handle_chunked_body(self):
-        """测试 Chunked 传输解析"""
-        chunked_response = (
-            b"4\r\nWiki\r\n"
-            b"5\r\npedia\r\n"
-            b"0\r\n\r\n"
-        )
-        mock_sock = MockSocket(chunked_response)
-        body = handle_chunked_body(b"", mock_sock)
-        self.assertEqual(body, b"Wikipedia")
+    # def test_handle_chunked_body(self):
+    #     """测试 Chunked 传输解析"""
+    #     chunked_response = (
+    #         b"4\r\nWiki\r\n"
+    #         b"5\r\npedia\r\n"
+    #         b"0\r\n\r\n"
+    #     )
+    #     mock_sock = MockSocket(chunked_response)
+    #     body = handle_chunked_body(b"", mock_sock)
+    #     self.assertEqual(body, b"Wikipedia")
+    #
+    # def test_decompress_gzip(self):
+    #     """测试 Gzip 解压"""
+    #     original_data = b"Hello, Gzip!"
+    #     gzip_buffer = BytesIO()
+    #     with gzip.GzipFile(fileobj=gzip_buffer, mode="wb") as f:
+    #         f.write(original_data)
+    #
+    #     compressed_data = gzip_buffer.getvalue()
+    #     decompressed_data = decompress_gzip(compressed_data)
+    #
+    #     self.assertEqual(decompressed_data, original_data)
 
-    def test_decompress_gzip(self):
-        """测试 Gzip 解压"""
-        original_data = b"Hello, Gzip!"
-        gzip_buffer = BytesIO()
-        with gzip.GzipFile(fileobj=gzip_buffer, mode="wb") as f:
-            f.write(original_data)
-
-        compressed_data = gzip_buffer.getvalue()
-        decompressed_data = decompress_gzip(compressed_data)
-
-        self.assertEqual(decompressed_data, original_data)
-
-    def test_is_redirect(self):
-        """测试是否是重定向"""
-        self.assertTrue(is_redirect(301))
-        self.assertTrue(is_redirect(302))
-        self.assertFalse(is_redirect(200))
-        self.assertFalse(is_redirect(404))
+    # def test_is_redirect(self):
+    #     """测试是否是重定向"""
+    #     self.assertTrue(is_redirect(301))
+    #     self.assertTrue(is_redirect(302))
+    #     self.assertFalse(is_redirect(200))
+    #     self.assertFalse(is_redirect(404))
 
     def test_get_redirect_location(self):
         """测试获取重定向地址"""

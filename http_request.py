@@ -11,7 +11,7 @@ def build_get_request(uri, headers=None):
     request_line = f"GET {path} HTTP/1.1"
     default_headers = {
         "Host": uri.host,
-        "User-Agent": "MyCustomBrowser/1.0",
+        "User-Agent": "XiongYuan and LiXinRui",
         "Connection": "Keep-Alive"
     }
 
@@ -31,7 +31,7 @@ def build_head_request(uri, headers=None):
     request_line = f"HEAD {path} HTTP/1.1"
     default_headers = {
         "Host": uri.host,
-        "User-Agent": "MyCustomBrowser/1.0",
+        "User-Agent": "XiongYuan and LiXinRui",
         "Connection": "Keep-Alive"
     }
 
@@ -52,7 +52,7 @@ def build_post_request(uri, data, headers=None, file_path=None):
 
     default_headers = {
         "Host": uri.host,
-        "User-Agent": "MyCustomBrowser/1.0",
+        "User-Agent": "XiongYuan and LiXinRui",
         "Connection": "Keep-Alive"
     }
 
