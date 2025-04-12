@@ -73,6 +73,8 @@
 *【**FTP** 协议：把协议的关键交互步骤和典型过程说清楚即可。】*
 
 #### （**二**） **UI**设计  
+![ui](report/picture/ui.png)
+ui设计如上：我们支持了请求方法（**GET** **HEAD** **POST**）的选择，支持输入URL以进行访问，在请求方法为**POST**时间，支持在本地文件中选择需要上传的文件，同时支持选择文件类型来协助文件上传。在返回部分，我们设计了**状态行**，**响应头**，**响应体**三个返回框，可以在用户发送请求后，返回**HTTP**报文的返回状态，响应头，和原始的响应体内容。
 
 #### （**三**） 框架结构  
 *【说清楚客户端程序和服务器端程序的框架结构。特别是服务器程序：说明支持多个用户（连接）的方法，如多进程、多线程、多路复用等；如果存在进程或线程之间共享数据的，还要注意保护加锁等。说明错误处理的方法。】*
@@ -82,7 +84,104 @@
 ### **3**. 关键代码的描述  
 *【主要代码源文件名及功能描述，是借鉴还是自主编写，自主编写需注明编写人。】*
 
-#### （**一**） 关键代码**1** ……  
+#### （**一**） 关键代码**1**:
+##### client.py
+自主编写：大部分由熊原编写，李鑫瑞做了部分修改和添加
+```python
+def send_request(uri, method="GET", body=None, file_path=None, depth=0, resource_types=None):
+    """发送 HTTP/HTTPS 请求，支持缓存与重定向"""
+    if depth > 5:
+        print("[!] 重定向次数过多")
+        return
+
+    uri_parsed = parse_uri(uri)
+    host, port = get_host_port(uri_parsed)
+
+    headers = {}
+    inject_default_headers(headers, host, keep_alive=False, user_agent=USER_AGENT)
+
+    # 如果存在缓存，添加 `If-Modified-Since` 和 `If-None-Match` 头
+    if is_cached(uri):
+        cached_headers = get_cached_headers(uri)
+        headers.update({k: v for k, v in cached_headers.items() if v})
+
+    CookieJar.inject_into_headers(COOKIE_JAR, headers, uri)
+    print("COOKIE_JAR:",COOKIE_JAR.getcookies())
+    # 处理文件上传
+    if method == "POST" and file_path:
+        body, extra_headers = build_multipart_form_data(file_path)
+        headers.update(extra_headers)
+
+    # 构造请求
+    if method == "GET":
+        request = build_get_request(uri_parsed, headers)
+    elif method == "HEAD":
+        request = build_head_request(uri_parsed, headers)
+    elif method == "POST":
+        request = build_post_request(uri_parsed, body or "", headers, file_path)
+    else:
+        raise ValueError("Unsupported HTTP method")
+
+    use_https = uri_parsed.scheme == "https"
+    sock = make_connection(host, port, use_https=use_https)
+    # 发送请求
+    if isinstance(request, str):
+        print("request:\n" + request)
+        sock.sendall(request.encode("utf-8"))  # 仅字符串需要 encode
+    else:
+        print("request为bytes")
+        sock.sendall(request)  # 如果已经是 bytes，直接发送
+
+    status_line, headers, body = read_response(sock)
+    sock.close()
+
+    if method == "HEAD":
+        body = None
+
+    # 提取cookie
+
+    COOKIE_JAR.extract_from_headers(headers)
+    
+    # 处理 304 Not Modified，直接返回缓存内容
+    status_code = int(status_line.split()[1])
+    if status_code == 304:
+        print("[CACHE] 服务器返回 304 Not Modified，使用缓存")
+        if method == "HEAD":
+            return status_line,get_cached_headers(uri),None
+        return status_line,get_cached_headers(uri),load_cached_body(uri)
+
+
+    # 处理重定向
+    if is_redirect(status_code):
+        location = get_redirect_location(headers)
+        redirect_uri = resolve_relative_url(uri, location)
+        print(f"[→] 重定向到 {redirect_uri}")
+        return status_line,headers,send_request(redirect_uri, method, body, depth + 1, resource_types=resource_types)
+
+    # 存储缓存
+    store_response(uri, headers, body)
+
+    # 保存主页面
+    save_to_file(uri_parsed, body, headers.get("Content-Type"))
+
+    # 如果是 HTML 页面则提取资源并下载
+    content_type = headers.get("Content-Type", "")
+    if "text/html" in content_type and method == "GET":
+        download_embedded_resources(body, uri, resource_types=resource_types)
+
+    return status_line,headers,body
+
+```
+该函数具有以下功能：
+- 支持 **GET/HEAD/POST** 三种 HTTP 方法
+
+- 处理文件上传 **（POST）**
+
+- 支持 **Cookie**、缓存、重定向
+
+- 可以自动下载 **HTML** 中嵌套的资源（如 **CSS**、**JS**、图片）
+
+- 支持最大重定向深度控制
 
 #### （**二**） 关键代码**2** ……  
 
@@ -109,5 +208,6 @@
 
 ## 附件  
 **1**. 源码文件  
+[github地址](https://github.com/Glommist/HTTP_client.git)
 **2**. 相关文档  
 **3**. 参考资料（链接）……

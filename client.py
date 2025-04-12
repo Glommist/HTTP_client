@@ -95,10 +95,7 @@ def send_request(uri, method="GET", body=None, file_path=None, depth=0, resource
     # 提取cookie
 
     COOKIE_JAR.extract_from_headers(headers)
-
-    # print(f"[i] {status_line}")
-    # print(f"[i] 响应头: {headers}")
-
+    
     # 处理 304 Not Modified，直接返回缓存内容
     status_code = int(status_line.split()[1])
     if status_code == 304:
