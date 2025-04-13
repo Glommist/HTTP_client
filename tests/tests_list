@@ -1,0 +1,12 @@
+1.GET
+2.HEAD
+2.URL 解析
+3.应答码回复
+4.两种连接模式
+5.Https
+6.重定向
+7.Chunked传输
+8.gzip解码
+9.Cookie机制
+10.cache
+11.POST文件上传
