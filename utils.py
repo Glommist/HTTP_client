@@ -26,8 +26,8 @@ def save_to_file(uri, body_bytes, content_type=None):
         filename += ext_map.get(content_type.split(";")[0], "")
 
     # 确保目录存在
-    os.makedirs("downloaded", exist_ok=True)
-    filepath = os.path.join("downloaded", filename)
+    os.makedirs("downloaded_picture", exist_ok=True)
+    filepath = os.path.join("downloaded_picture", filename)
 
     # 保存文件
     with open(filepath, "wb") as f:

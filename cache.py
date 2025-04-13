@@ -4,7 +4,7 @@ import json
 import hashlib
 from datetime import datetime
 
-CACHE_DIR = "cache"
+CACHE_DIR = "cache_picture"
 
 # 确保缓存目录存在
 if not os.path.exists(CACHE_DIR):

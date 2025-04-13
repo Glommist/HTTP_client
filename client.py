@@ -96,8 +96,8 @@ def send_request(uri, method="GET", body=None, file_path=None, depth=0, resource
     status_line, headers, body = read_response(sock)
     sock.close()
 
-    if method == "HEAD":
-        body = None
+    # if method == "HEAD":
+    #     body = None
 
     # 提取cookie
 
@@ -147,7 +147,7 @@ def download_embedded_resources(html_body, base_uri, resource_types=None):
 
 
 def main():
-    method = "GET"
+    method = "HEAD"
     url = "http://www.xjtu.edu.cn"  # 选择一个支持 POST 的服务器
     file_path = "post_file.txt"
     resource_type = ["script"]

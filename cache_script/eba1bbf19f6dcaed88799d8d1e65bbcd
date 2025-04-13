@@ -1,0 +1,6 @@
+{
+    "Last-Modified": "Thu, 15 Dec 2022 12:12:14 GMT",
+    "ETag": "\"17e-5efdcc375c874\"",
+    "Date": "Sun, 13 Apr 2025 03:25:57 GMT",
+    "Body": "/**\n * Workaround for deprecated $.browser which was removed in jQuery 1.9\n * @see https://api.jquery.com/jquery.browser/\n */\n(function ($) {\n  if ($.browser===undefined) {\n    $.browser={};\n    $.browser.msie=false;\n    $.browser.version=0;\n    if (navigator.userAgent.match(/MSIE ([0-9]+)\\./)) {\n      $.browser.msie=true;\n      $.browser.version=RegExp.$1;\n    }\n  }\n})(jQuery);\n"
+}
