@@ -3,6 +3,8 @@
 2. URL 解析
 - URI的"%HEXHEX"编码
   - http://abc.com:80/~smith/ 和 http://ABC.com/%7Esmith/
+  - https://www.w3schools.com/~username/
+  - https://www.w3schools.com/%7Eusername/
 3. 应答码回复
 - 500:https://httpstat.us/500
 - 3xx:www.python.org
