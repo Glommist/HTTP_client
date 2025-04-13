@@ -9,6 +9,8 @@ from PyQt5.QtGui import QIcon, QFont
 
 from client import send_request
 
+from client import send_request, set_keep_alive
+
 class HttpClientUI(QWidget):
     def __init__(self):
         super().__init__()
@@ -130,6 +132,18 @@ class HttpClientUI(QWidget):
         top_layout.addWidget(self.resource_type_combo)
         self.layout.addLayout(top_layout)
 
+        # 连接模式选择框
+        connection_label = QLabel("连接模式:")
+        connection_label.setFont(title_font)
+
+        self.connection_mode_combo = QComboBox()
+        self.connection_mode_combo.setFont(yahei_font)
+        self.connection_mode_combo.addItems(["Keep-Alive", "Close"])
+        self.connection_mode_combo.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
+
+        top_layout.addWidget(connection_label)
+        top_layout.addWidget(self.connection_mode_combo)
+
         # 响应状态行
         self.response_status = QTextEdit()
         self.response_status.setReadOnly(True)
@@ -178,7 +192,11 @@ class HttpClientUI(QWidget):
         url = self.url_input.text()
         method = self.method_combo.currentText()
         file_path = getattr(self, 'file_path', None)
-        
+
+        # 设置连接模式
+        connection_mode = self.connection_mode_combo.currentText()
+        set_keep_alive(connection_mode == "Keep-Alive")
+
         # https://www.un.org/en/climatechange/reports  测试pdf资源提取功能网址
         type_text = self.resource_type_combo.currentText()
         resource_type = None if type_text == "全部" else [type_text]

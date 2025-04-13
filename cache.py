@@ -43,7 +43,8 @@ def get_cached_headers(uri):
 def store_response(uri, headers, body):
     """存储 HTTP 响应到缓存"""
     cache_path = _get_cache_path(uri)
-    
+    os.makedirs(os.path.dirname(cache_path), exist_ok=True)
+
     cache_data = {
         "Last-Modified": headers.get("Last-Modified"),
         "ETag": headers.get("ETag"),

@@ -23,7 +23,13 @@ from cache import is_cached, get_cached_headers, store_response, load_cached_bod
 
 USER_AGENT = "XiongYuan and LiXinRui"
 COOKIE_JAR = CookieJar()
+
 KEEP_ALIVE = False
+
+def set_keep_alive(value: bool):
+    global KEEP_ALIVE
+    KEEP_ALIVE = value
+
 
 
 def make_connection(host, port, use_https=False):
@@ -141,7 +147,7 @@ def download_embedded_resources(html_body, base_uri, resource_types=None):
 
 
 def main():
-    method = "HEAD"
+    method = "GET"
     url = "http://www.xjtu.edu.cn"  # 选择一个支持 POST 的服务器
     file_path = "post_file.txt"
     resource_type = ["script"]
