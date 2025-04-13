@@ -12,7 +12,6 @@ def build_get_request(uri, headers=None):
     default_headers = {
         "Host": uri.host,
         "User-Agent": "XiongYuan and LiXinRui",
-        "Connection": "Keep-Alive"
     }
 
     if headers:
@@ -32,7 +31,6 @@ def build_head_request(uri, headers=None):
     default_headers = {
         "Host": uri.host,
         "User-Agent": "XiongYuan and LiXinRui",
-        "Connection": "Keep-Alive"
     }
 
     if headers:
@@ -53,7 +51,6 @@ def build_post_request(uri, data, headers=None, file_path=None):
     default_headers = {
         "Host": uri.host,
         "User-Agent": "XiongYuan and LiXinRui",
-        "Connection": "Keep-Alive"
     }
 
     # 处理 JSON 数据

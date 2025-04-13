@@ -23,6 +23,7 @@ from cache import is_cached, get_cached_headers, store_response, load_cached_bod
 
 USER_AGENT = "XiongYuan and LiXinRui"
 COOKIE_JAR = CookieJar()
+KEEP_ALIVE = False
 
 
 def make_connection(host, port, use_https=False):
@@ -52,7 +53,7 @@ def send_request(uri, method="GET", body=None, file_path=None, depth=0, resource
     host, port = get_host_port(uri_parsed)
 
     headers = {}
-    inject_default_headers(headers, host, keep_alive=False, user_agent=USER_AGENT)
+    inject_default_headers(headers, host, keep_alive=KEEP_ALIVE, user_agent=USER_AGENT)
 
     # 如果存在缓存，添加 `If-Modified-Since` 和 `If-None-Match` 头
     if is_cached(uri):
