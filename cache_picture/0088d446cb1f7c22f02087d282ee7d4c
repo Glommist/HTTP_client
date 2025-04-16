@@ -1,0 +1,6 @@
+{
+    "Last-Modified": "Fri, 11 Apr 2025 05:55:34 GMT",
+    "ETag": "\"04f1757a6aadb1:0\"",
+    "Date": "Wed, 16 Apr 2025 06:02:50 GMT",
+    "Body": "{\n    \"name\": \"W3Schools\",\n    \"short_name\": \"W3Schools\",\n    \"icons\": [\n        {\n            \"src\": \"/android-chrome-192x192.png\",\n            \"sizes\": \"192x192\",\n            \"type\": \"image/png\"\n        },\n        {\n            \"src\": \"/android-chrome-512x512.png\",\n            \"sizes\": \"512x512\",\n            \"type\": \"image/png\"\n        }\n    ],\n    \"theme_color\": \"#ffffff\",\n    \"background_color\": \"#ffffff\",\n    \"display\": \"standalone\"\n}\n"
+}

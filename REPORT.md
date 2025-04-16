@@ -71,16 +71,26 @@
 ## 🔧 五、实验实现  
 
 ### 👥 1. 人员分工  
-*（此部分可根据实际补充）*
+
+#### 🧑‍💻熊原：
+
+- 完成了服务器端的相关配置以及POST服务中服务端代码
+- 完成了项目整体框架设计
+- 实现了 **`cache.py`**(缓存机制)， **`client.py`**(客户端实现)，**`http_requset.py`**(**POST**方法实现)， **`http_ui.py`**(**POST**中不同类型文件选择部分ui实现)
+- 测试部分：**`test_uri`**(**url**解析测试)，同时，协助测试代码**bug**解决
+- 测试报告撰写
+
+#### 🧑‍💻李鑫瑞：
+
+- 实验报告撰写，部分测试报告撰写
+- 实现了 **`cookie_jar.py`**(**cookie**机制的实现)，**`http_requset.py`**(**GET HEAD** 两种种方法的接口)，**`http_response.py`**(**chunked**传输，**Gzip**解码的实现，重定向判断接口)， **`http_ui.py`**(**ui**的设计与实现)
+- 测试部分：**`test_chunked.py`**(**chunked**传输的测试)，**`test_cookie.py`**(**cookie**注入，存储，访问的测试)，**`test_gzip.py`** (**Gzip**解码测试)，**`test_request.py`**(**GET**请求的测试)，**`test_response.py`**(**Http**回复测试)
 
 ### 🧩 2. 实验设计  
 
-#### 🔗 协议
-- 本实验采用 **TCP + C/S** 通信模型，客户端通过 socket 与服务器建立连接，发送 HTTP 请求并解析响应。使用多线程或异步实现多用户通信，必要时对共享资源加锁保护。
-
 #### 🖼️ UI设计  
 ![ui](report/picture/ui.png)  
-  设计如上：我们支持了请求方法（**GET** **HEAD** **POST**）的选择，支持输入URL以进行访问，在请求方法为**POST**时间，支持在本地文件中选择需要上传的文件，同时支持选择文件类型来协助文件上传。在返回部分，我们设计了**状态行**，**响应头**，**响应体**三个返回框，可以在用户发送请求后，返回**HTTP**报文的返回状态，响应头，和原始的响应体内容。
+  设计如上：我们支持了请求方法（**GET** **HEAD** **POST**）的选择，支持输入URL以进行访问，在请求方法为**POST**时间，支持在本地文件中选择需要上传的文件，同时支持选择文件类型来协助文件上传。同时支持连接模式的**Keep-Alive**和**Close**之间的选择。在返回部分，我们设计了**状态行**，**响应头**，**响应体**三个返回框，可以在用户发送请求后，返回**HTTP**报文的返回状态，响应头，和原始的响应体内容。
 
 #### 🏗️ 框架结构  
 我们的项目结构如下:
@@ -93,6 +103,7 @@ HTTP_CLIENT
 │  http_response.py
 │  uri_utils.py
 │  utils.py
+│  http_ui.py
 │
 ├─report
 │  └─picture
@@ -110,7 +121,6 @@ HTTP_CLIENT
 │  
 │
 └─ui
-   │  http_ui.py
    │
    └─picture
           Arrow-down.svg
@@ -297,12 +307,12 @@ def parse_uri(uri_str):
     return URI(scheme, host.lower(), port, normalize_path(path), query)
 ```
 该部分具有以下功能：
+
 - 拆解 **scheme://host:port/path?query** 格式**URI**
 
 - 默认端口设置：**http=80，https=443**
 
 - 为后续构造请求做准备（尤其用于分离主机与路径）
-
 
 
 #### （**三**） 关键代码**3**
@@ -406,6 +416,7 @@ def build_post_request(uri, data, headers=None, file_path=None):
 
 ```
 该部分具有以下功能：
+
 - 三个函数分别构建 **GET / HEAD / POST** 请求报文
 
 - 支持手动追加 **Headers**，如 **User-Agent Connection**
@@ -498,29 +509,190 @@ def load_cached_body(uri):
     return cache_data["Body"].encode("utf-8")
 ```
 该部分具有以下功能：
+
 - 使用本地缓存目录保存请求响应的 **ETag / Last-Modified / Body**
 
 - 可通过请求头 **If-Modified-Since** 和 **If-None-Match** 实现 **HTTP** 缓存机制
 
 - 节省流量、提升响应速度
----
-
-## 六、测试及结果分析  
-*【测试过程应当比较详尽，把所有的功能都测试覆盖了，还要注意错误情况的处理。】*
-
-### **1**. 测试**1**  
-测试过程、说明、结果及分析。
-
-### **2**. 测试**2**  
-测试过程、说明、结果及分析。
 
 ---
 
-## 七、实验结论  
+## 🧭 六、测试及结果分析  
+
+### 1. GET 请求测试
+
+> 使用常规 GET 请求测试客户端的请求与响应功能。
+![alt text](report/test/GET.png)
+> 如图，访问了学校网页，成功返回了对应的响应头和响应体
+---
+
+### 2. HEAD 请求测试
+
+> 验证是否能仅请求响应头部信息，无响应体内容。
+![alt text](report/test/HEAD.png)
+> 如图，使用HEAD时，由于之前已经访问过了对应的网站，此时再次使用HEAD访问时，会触发缓存，但是HEAD的使用没有问题。
+---
+
+### 3. POST 请求测试
+
+> 包括文件上传、多字段提交等 POST 操作，验证参数解析和服务器响应情况。
+![alt text](report/test/POST.png)
+> 如图，使用阿里云服务器，通过编写python代码搭建简易的服务器，通过客户端发送POST请求，选择上传本地的client.py文件，通过响应体可见POST请求使用正常。
+---
+
+### 4. URL 解析功能测试
+
+> 正确处理包含特殊字符的 URL 编码。
+
+- 示例 URL：
+  - `https://www.w3schools.com/~username/`
+  - `https://www.w3schools.com/%7Eusername/`
+  ![alt text](report/test/URL-1.png)
+  ![alt text](report/test/URL-2_1.png)
+  ![alt text](report/test/URL-2_2.png)
+
+> 如图可见，通过两种不同的URL进行访问，获得了同样的返回内容，说明客户端可以成功解析这两种URL。此处的404状态值是由于网页请求资源本身不存在所导致的，但访问的页面是同一个。
 
 ---
 
-## 八、总结及心得体会  
+### 5. 应答码测试
+
+> 验证不同状态码的处理能力。
+
+- 500 错误码：[https://httpstat.us/500](https://httpstat.us/500)
+![alt text](report/test/500.png)
+- 3xx 重定向：[https://www.python.org](https://www.python.org)
+![alt text](report/test/300.png)
+
+> 如图，客户端对不同的返回值可以正确的返回结果。对于500，会显示出错误代码。对于301，会自动重定向，最终成功访问目标网站。
+
+---
+
+### 6. 连接模式测试
+
+> 支持 Keep-Alive 与 Close 模式。
+
+![alt text](report/test/KEEPALIVE.png)
+![alt text](report/test/CLOSE.png)
+
+> 如图，这两种连接模式都能够正常使用。
+---
+
+### 7. HTTPS 支持测试
+
+> 检查是否能通过 TLS 访问 HTTPS 网站。
+
+- 示例网站：[https://www.python.org](https://www.python.org)
+![alt text](report/test/Https.png)
+
+> 如图可见，对于https的网址，该客户端程序仍然成功的返回了正确的响应内容，状态码为200。
+---
+
+### 8. 重定向处理测试
+
+> 客户端能否自动跳转到目标地址。
+![alt text](report/test/300.png)
+
+> 如图，对于网址http://www.python.org，返回码是301，在客户端中成功通过重定向，得到了正确的URL，并返回了正确值。
+
+---
+
+### 9. Chunked 传输测试
+
+> 使用 chunked 分块传输响应的测试。
+
+- 测试脚本：`test_chunked.py`
+![alt text](report/test/chunked.png)
+
+> 如图，成功实现了chunked 分块传输。
+
+---
+
+### 10. Gzip 解码测试
+
+> 是否能够自动识别并解码 gzip 编码的响应体。
+
+- 测试脚本：`test_gzip.py`
+![alt text](report/test/gzip.png)
+
+> 如图，成功使用gzip编码，并解码得到了正确的响应内容。
+
+---
+
+### 11. Cookie 机制测试
+
+> 验证客户端是否能正确处理和发送 Cookie。
+
+- 测试脚本：`test_cookie.py`
+![alt text](report/test/cookie.png)
+
+> 如图，第一次通过访问 http://httpbin.org/cookies/set?session_id=123456. 设置了session_id，
+> 第二次通过 http://httpbin.org/cookies 访问对应网址，并成功打印出上一次访问时所存储的cookie值。
+---
+
+### 12. 缓存机制测试
+
+> 检查 Last-Modified 与 ETag 缓存策略的支持。
+
+- 连续访问同一页面两次，查看是否使用缓存。
+![alt text](report/test/Cache.png)
+
+> 如图，在之前已经访问过一次学校网站后再次访问，会返回304，并通过本地存储的资源直接返回。
+---
+
+### 13. 文件上传测试（POST）
+
+> 通过 POST 方法上传本地文件。
+
+- 测试服务器：[http://47.109.192.71:8080](http://47.109.192.71:8080)
+
+> 服务器上传前，内容如下：
+![alt text](report/test/服务器上传文件.png)
+此时，uploads文件夹为空。
+![alt text](report/test/POST.png)
+运行POST，选择文件进行上传，由返回内容可见上传成功。
+
+> 上传文件后，内容如下：
+![alt text](report/test/服务器上传文件2.png)
+如图，在对应的服务器中，也出现了被上传的文件。
+
+### 14. 不同类型的文件获取：
+
+- img：
+![alt text](report/test/picture.png)
+- script:
+![alt text](report/test/script.png)
+- pdf:
+![alt text](report/test/pdf.png)
+
+> 如图，访问网址后，通过资源类型选择下载资源文件，可以在对应的download文件夹得到该种类型的文件。
+
+
+---
+
+## 🔚 七、实验结论  
+本实验通过自主设计和实现一个简易的 **HTTP** 客户端程序，深入理解了 **HTTP** 协议的基本原理和交互过程，掌握了基于 **TCP Socket** 的底层网络编程方法。在不借助第三方库（如 **requests、urllib**）的前提下，我们完成了 **URI** 解析、请求构造、响应解析、缓存与 **Cookie** 管理等核心模块，并对用户界面进行了简单设计，使客户端具备基本的“文本浏览器”功能。
+通过多个模块的协作与调试，验证了各功能模块的正确性与可扩展性，实现了多种 **HTTP** 请求的发送和响应的解析，具备一定的实用性。实验不仅提升了我们动手能力，也锻炼了我们将网络协议与编程实现相结合的能力。
+
+---
+
+## 🧠 八、总结及心得体会  
+通过本次实验，我们深入理解了 **HTTP** 协议的工作机制，包括请求方法（如 **GET、POST**）、状态码的含义、请求报文与响应报文的结构等。在动手实现的过程中，我们遇到了诸多挑战，例如：
+
+- 如何构造合法且完整的 **HTTP** 请求报文；
+
+- 如何解析响应中的状态行、头部字段与实体主体；
+
+- 如何实现简易的缓存与 **Cookie** 管理功能；
+
+- 如何处理 **URL** 中的路径、参数与编码；
+
+- 如何设计程序结构，使各模块职责清晰、易于扩展。
+
+这些问题促使我们查阅了许多文献、文档和协议规范，也加强了对网络编程和软件设计原则的理解。
+
+本项目由熊原与李鑫瑞合作完成，双方在设计思路、代码编写与调试过程中密切配合，互相交流，不仅提升了编程技能，也锻炼了团队协作能力。总的来说，这是一次非常有收获的实验，既巩固了理论知识，也提高了解决实际问题的能力。
 
 ---
 
@@ -528,6 +700,7 @@ def load_cached_body(uri):
 **1**. 源码文件  
 [github地址](https://github.com/Glommist/HTTP_client.git)
 **2**. 相关文档  
-**3**. 参考资料（链接）……
-
+[python项目开发规范](https://mpwang.github.io/2019/10/20/python-convention/)
+**3**. 参考资料（链接）
+[HTTP资源与规范](https://developer.mozilla.org/zh-CN/docs/Web/HTTP/Reference/Resources_and_specifications)
 
