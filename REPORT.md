@@ -76,7 +76,7 @@
 
 - 完成了服务器端的相关配置以及POST服务中服务端代码
 - 完成了项目整体框架设计
-- 实现了 **`cache.py`**(缓存机制)， **`client.py`**(客户端实现)，**`http_requset.py`**(**POST**方法实现)， **`http_ui.py`**(**POST**中不同类型文件选择部分ui实现)
+- 实现了 **`cache.py`**(缓存机制)， **`client.py`**(客户端实现)，**`http_requset.py`**(**POST**方法实现)， **`http_ui.py`**(**POST**中不同类型文件选择部分ui实现)，以及 **`utils.py`** 中工具函数的编写。
 - 测试部分：**`test_uri`**(**url**解析测试)，同时，协助测试代码**bug**解决
 - 测试报告撰写
 
@@ -317,7 +317,7 @@ def parse_uri(uri_str):
 
 #### （**三**） 关键代码**3**
 ##### 🔧 GET HEAD POST
-自主编写：由李鑫瑞编写
+自主编写：由李鑫瑞编写，熊原针对文件上传功能做了部分功能。
 ```python
 # 构造 GET 请求
 def build_get_request(uri, headers=None):
@@ -493,7 +493,7 @@ def store_response(uri, headers, body):
         "Last-Modified": headers.get("Last-Modified"),
         "ETag": headers.get("ETag"),
         "Date": headers.get("Date"),
-        "Body": body.decode("utf-8", errors="ignore"),  # 转换为字符串
+        "Body": body.decode("utf-8", errors="ignore"), 
     }
 
     with open(cache_path, "w", encoding="utf-8") as f:
