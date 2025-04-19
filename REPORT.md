@@ -4,14 +4,17 @@
   <tr>
     <th>👤 姓名</th>
     <th>🏫 班级</th>
+    <th>学号</th>
   </tr>
   <tr>
     <td>熊原</td>
-    <td>计算机2201</td>
+    <td>计算机2202</td>
+    <td>2226114096</td>
   </tr>
   <tr>
     <td>李鑫瑞</td>
     <td>计算机2204</td>
+    <td>2226114009</td>
   </tr>
 </table>
 
@@ -425,9 +428,60 @@ def build_post_request(uri, data, headers=None, file_path=None):
 
 - 文件上传时自动判断 **MIME** 类型
 
-
-
 #### （**四**） 关键代码**4**
+##### 🔧 upload_server.py
+自主编写：熊原编写
+```python
+import http.server
+import os
+import cgi
+
+UPLOAD_DIR = "./uploads"
+
+class UploadHandler(http.server.SimpleHTTPRequestHandler):
+    def do_POST(self):
+        """Handle file upload via POST request"""
+        content_type, pdict = cgi.parse_header(self.headers.get('Content-Type'))
+
+        if content_type == 'multipart/form-data':
+            # 使用 FieldStorage 解析 multipart 表单数据
+            form = cgi.FieldStorage(fp=self.rfile, headers=self.headers, environ={'REQUEST_METHOD': 'POST'})
+            uploaded_file = form['file']  # "file" 是表单字段名称
+
+            if uploaded_file.filename:
+                file_name = os.path.basename(uploaded_file.filename)  # 获取上传的原始文件名
+                os.makedirs(UPLOAD_DIR, exist_ok=True)  # 确保目录存在
+                
+                file_path = os.path.join(UPLOAD_DIR, file_name)
+                with open(file_path, "wb") as f:
+                    f.write(uploaded_file.file.read())  # 读取并保存文件
+
+                self.send_response(200)
+                self.end_headers()
+                self.wfile.write(f"File {file_name} uploaded successfully!\n".encode())
+            else:
+                self.send_response(400)
+                self.end_headers()
+                self.wfile.write(b"Bad Request: No file received\n")
+        else:
+            self.send_response(400)
+            self.end_headers()
+            self.wfile.write(b"Bad Request: Unsupported Content-Type\n")
+
+PORT = 8080
+server_address = ("", PORT)
+
+httpd = http.server.HTTPServer(server_address, UploadHandler)
+print(f"Serving at port {PORT}")
+httpd.serve_forever()
+```
+
+该部分具有以下功能：
+- `FieldStorage` 用于解析 `multipart` 表单数据。同时，在客户端的文件上传构造代码里，针对文件上传使用了`multipart`的结构。
+
+- 根据上传的原始文件名及接受数据，将文件放置在指定位置。
+
+#### （**五**） 关键代码**5**
 ##### 🔧 chunked Gzip
 自主编写：李鑫瑞编写
 ```python
@@ -464,7 +518,7 @@ def decompress_gzip(body):
 
 
 
-#### （**五**） 关键代码**5**
+#### （**六**） 关键代码**6**
 ##### 🔧 cache
 自主编写：由熊原编写
 ```python
